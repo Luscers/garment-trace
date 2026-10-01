@@ -5,91 +5,138 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>溯源码演示</title>
   <style>
+    * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: #f3efe8;
-      color: #1c1712;
-      padding: 28px 16px 48px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #f5f6f8;
+      color: #1f2329;
+      font-size: 14px;
     }
-    .wrap { width: min(880px, 100%); margin: 0 auto; }
-    h1 { font-size: 24px; margin: 0 0 8px; }
-    .sub { color: #8a7f72; margin: 0 0 24px; line-height: 1.7; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
     }
-    .card {
-      background: #fffdf9;
-      border: 1px solid #e7dfd3;
-      border-radius: 20px;
-      padding: 18px;
-      text-align: center;
-      box-shadow: 0 12px 30px rgba(28,23,18,0.05);
+    h1 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      font-weight: 600;
     }
-    .card img {
-      width: 160px;
-      height: 160px;
-      border-radius: 12px;
+    .sub {
+      margin: 0 0 20px;
+      color: #86909c;
+      line-height: 1.7;
+    }
+    .panel {
       background: #fff;
-      border: 1px solid #eee6da;
+      border: 1px solid #e5e6eb;
+      border-radius: 4px;
     }
-    .code {
-      margin: 12px 0 6px;
-      font-family: ui-monospace, Menlo, monospace;
-      font-size: 13px;
-      letter-spacing: 0.06em;
+    .panel-hd {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e5e6eb;
+      font-weight: 600;
+      font-size: 14px;
     }
-    .name { color: #8a7f72; font-size: 13px; min-height: 40px; }
-    .btn {
-      display: inline-block;
+    .panel-bd {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .qr-item {
+      border: 1px solid #e5e6eb;
+      border-radius: 4px;
+      padding: 14px;
+      background: #fff;
+    }
+    .qr-item img {
+      width: 100%;
+      aspect-ratio: 1;
+      display: block;
+      border: 1px solid #f2f3f5;
+      background: #fff;
+    }
+    .qr-code {
       margin-top: 10px;
-      padding: 8px 14px;
-      border-radius: 999px;
-      background: #9a6b3f;
-      color: #fff;
-      text-decoration: none;
-      font-size: 13px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
     }
-    .tip {
-      margin-top: 24px;
+    .qr-name {
+      color: #86909c;
+      font-size: 12px;
+      margin: 4px 0 10px;
+      min-height: 34px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      height: 30px;
+      padding: 0 12px;
+      border: 1px solid #e5e6eb;
+      border-radius: 4px;
+      color: #1f2329;
+      text-decoration: none;
+      background: #fff;
+      font-size: 12px;
+    }
+    .btn:hover { border-color: #165dff; color: #165dff; }
+    .tips {
+      margin-top: 12px;
+      background: #fff;
+      border: 1px solid #e5e6eb;
+      border-radius: 4px;
       padding: 14px 16px;
-      border-radius: 16px;
-      background: #efe6d8;
-      color: #5c5248;
+      color: #4e5969;
       font-size: 13px;
       line-height: 1.8;
+    }
+    .tips strong { color: #1f2329; }
+    code {
+      background: #f2f3f5;
+      padding: 1px 5px;
+      border-radius: 2px;
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>服装溯源码 · 演示入口</h1>
-    <p class="sub">用手机「扫一扫」下方二维码，或点击卡片查看溯源页。也可访问 <code>/admin</code> 查看工厂后台。</p>
-    <div class="grid" id="grid">加载中…</div>
-    <div class="tip">
-      <strong>演示说明</strong><br/>
-      1. 吊牌二维码指向 <code>/t/{溯源码}</code>，消费者扫码即见厂家、地址、批次等信息。<br/>
-      2. 工厂侧在 <code>/admin</code> 导入款号批次即可自动生码、导出。<br/>
-      3. 本 Demo 使用 SQLite 便于演示，正式环境按规格切换 MySQL。
+  <div class="page">
+    <h1>服装溯源码演示入口</h1>
+    <p class="sub">
+      用手机扫描下方二维码，或打开对应链接查看消费者溯源页。管理端见
+      <a href="/admin" style="color:#165dff">/admin</a>。
+    </p>
+
+    <div class="panel">
+      <div class="panel-hd">吊牌二维码样例</div>
+      <div class="panel-bd" id="grid">加载中…</div>
+    </div>
+
+    <div class="tips">
+      <strong>使用说明</strong><br/>
+      1. 二维码指向 <code>/t/{溯源码}</code>，扫码后展示生产厂家、地址、批次、成分等档案信息。<br/>
+      2. 后台在 <code>/admin</code> 可导入款号批次并自动生码、启停用。<br/>
+      3. 演示环境使用 SQLite；正式环境按规格切换 MySQL，并配置备案域名。
     </div>
   </div>
+
   <script>
+    const names = {
+      "GT-A01-8F3K2M": "精纺羊毛大衣 · 燕麦色",
+      "GT-A02-5R9W1P": "真丝印花连衣裙 · 墨绿提花",
+      "GT-B01-7N4Q6X": "精梳棉衬衫 · 雾蓝",
+    };
+
     async function main() {
       const res = await fetch("/api/demo/codes");
       const json = await res.json();
       const codes = json.data || [];
-      const names = {
-        "GT-A01-8F3K2M": "精纺羊毛大衣 · 燕麦色",
-        "GT-A02-5R9W1P": "真丝印花连衣裙 · 墨绿提花",
-        "GT-B01-7N4Q6X": "精梳棉衬衫 · 雾蓝",
-      };
       document.getElementById("grid").innerHTML = codes.map(c => `
-        <div class="card">
+        <div class="qr-item">
           <img src="/static/qr/${c}.png" alt="${c}" />
-          <div class="code">${c}</div>
-          <div class="name">${names[c] || "溯源演示样衣"}</div>
+          <div class="qr-code">${c}</div>
+          <div class="qr-name">${names[c] || "溯源演示样衣"}</div>
           <a class="btn" href="/t/${c}" target="_blank">查看溯源页</a>
         </div>
       `).join("");

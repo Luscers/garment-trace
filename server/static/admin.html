@@ -5,164 +5,450 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>溯源管理后台</title>
   <style>
+    /* Enterprise admin UI aligned with Tabler / Element Plus density:
+       white panels, 4px radius, gray canvas, dense tables — no pastel AI cards. */
     :root {
-      --bg: #f4f1ec;
+      --bg: #f5f6f8;
       --panel: #fff;
-      --ink: #1d1914;
-      --muted: #8b8176;
-      --line: #e6dfd5;
-      --accent: #8b5e34;
-      --accent-soft: #f0e5d7;
-      --ok: #2f5d50;
-      --danger: #a33b32;
+      --text: #1f2329;
+      --muted: #86909c;
+      --sub: #4e5969;
+      --line: #e5e6eb;
+      --line-soft: #f2f3f5;
+      --primary: #165dff;
+      --primary-hover: #0e42d2;
+      --success: #00b42a;
+      --success-bg: #e8ffea;
+      --danger: #f53f3f;
+      --danger-bg: #ffece8;
+      --sidebar: #2f3440;
+      --sidebar-text: #c9cdd4;
     }
     * { box-sizing: border-box; }
+    html, body { height: 100%; }
     body {
       margin: 0;
-      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
       background: var(--bg);
-      color: var(--ink);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .layout {
+      display: flex;
       min-height: 100vh;
     }
-    .wrap { width: min(960px, 100%); margin: 0 auto; padding: 24px 16px 48px; }
-    h1 { font-size: 22px; margin: 0 0 6px; letter-spacing: 0.04em; }
-    .sub { color: var(--muted); margin: 0 0 20px; font-size: 14px; }
+
+    .sider {
+      width: 200px;
+      background: var(--sidebar);
+      color: var(--sidebar-text);
+      flex-shrink: 0;
+    }
+
+    .sider .logo {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      color: #fff;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      font-size: 15px;
+    }
+
+    .sider nav { padding: 12px 8px; }
+    .sider a {
+      display: block;
+      color: var(--sidebar-text);
+      text-decoration: none;
+      padding: 10px 12px;
+      border-radius: 4px;
+      margin-bottom: 2px;
+      font-size: 13px;
+    }
+    .sider a.active, .sider a:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+
+    .main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      height: 52px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+    }
+
+    .header .crumb { color: var(--muted); font-size: 13px; }
+    .header .crumb b { color: var(--text); font-weight: 500; margin-left: 8px; }
+
+    .content {
+      padding: 16px 20px 28px;
+    }
+
     .panel {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 18px;
-      margin-bottom: 14px;
+      border-radius: 4px;
+      margin-bottom: 12px;
     }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    input, textarea, button, select {
-      font: inherit;
-      border-radius: 12px;
-      border: 1px solid var(--line);
-      padding: 10px 12px;
+
+    .panel-hd {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
     }
-    input, textarea { width: 100%; background: #fffdf9; }
-    textarea { min-height: 120px; resize: vertical; font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
-    button {
-      cursor: pointer;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 10px 16px;
+
+    .panel-hd h2 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
     }
-    button.ghost {
-      background: transparent;
-      color: var(--accent);
-      border: 1px solid var(--line);
+
+    .panel-bd { padding: 16px; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
     }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-    th { color: var(--muted); font-weight: 500; }
-    .pill {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 12px;
-      background: var(--accent-soft);
-      color: var(--accent);
-    }
-    .pill.off { background: #f3e4e2; color: var(--danger); }
-    .msg { margin: 10px 0 0; font-size: 13px; color: var(--ok); white-space: pre-wrap; }
-    .msg.err { color: var(--danger); }
-    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 8px; }
+
     .stat {
-      background: var(--accent-soft);
-      border-radius: 14px;
-      padding: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 16px;
     }
-    .stat .n { font-size: 24px; font-weight: 600; }
-    .stat .l { color: var(--muted); font-size: 12px; }
-    .hidden { display: none; }
-    a { color: var(--accent); }
-    code { background: #f4eee6; padding: 2px 6px; border-radius: 6px; }
+
+    .stat .l {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .stat .n {
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field { margin-bottom: 12px; }
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--sub);
+      font-size: 13px;
+    }
+
+    input, textarea, button {
+      font: inherit;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 8px 10px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.12);
+    }
+
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      padding: 0 14px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    .btn-default {
+      background: #fff;
+      color: var(--text);
+      border-color: var(--line);
+    }
+    .btn-default:hover { border-color: var(--primary); color: var(--primary); }
+
+    .btn-danger-text {
+      background: transparent;
+      color: var(--danger);
+      border: none;
+      padding: 0;
+      height: auto;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .btn-sm {
+      height: 28px;
+      padding: 0 10px;
+      font-size: 12px;
+    }
+
+    .table-wrap { overflow-x: auto; }
+
+    table.data {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    table.data th {
+      text-align: left;
+      color: var(--muted);
+      font-weight: 500;
+      background: #f7f8fa;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    table.data td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line-soft);
+      vertical-align: middle;
+    }
+
+    table.data tr:hover td { background: #fafbfc; }
+    table.data a { color: var(--primary); text-decoration: none; }
+
+    .tag {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 2px;
+      font-size: 12px;
+      border: 1px solid transparent;
+    }
+    .tag-ok {
+      color: var(--success);
+      background: var(--success-bg);
+      border-color: #aff0b5;
+    }
+    .tag-off {
+      color: var(--danger);
+      background: var(--danger-bg);
+      border-color: #ffc9c0;
+    }
+
+    .msg {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--success);
+      white-space: pre-wrap;
+    }
+    .msg.err { color: var(--danger); }
+
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      padding: 24px;
+    }
+
+    .login-card {
+      width: 380px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 28px 28px 20px;
+    }
+
+    .login-card h1 {
+      margin: 0 0 6px;
+      font-size: 18px;
+    }
+
+    .login-card .tip {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 0 0 20px;
+    }
+
+    .hidden { display: none !important; }
+
+    .link-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    code {
+      background: #f2f3f5;
+      padding: 1px 5px;
+      border-radius: 2px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .sider { display: none; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .form-row { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>服装溯源 · 管理后台</h1>
-    <p class="sub">轻量导入 / 生码 / 启停用 · 演示账号 <code>admin / yalan2026</code></p>
-
-    <section class="panel" id="loginPanel">
-      <div class="row">
-        <input id="username" placeholder="账号" value="admin" style="max-width:220px" />
-        <input id="password" type="password" placeholder="密码" value="yalan2026" style="max-width:220px" />
-        <button id="loginBtn">登录</button>
+  <div id="loginView" class="login-wrap">
+    <div class="login-card">
+      <h1>溯源管理后台</h1>
+      <p class="tip">演示账号 <code>admin</code> / <code>yalan2026</code></p>
+      <div class="field">
+        <label>账号</label>
+        <input id="username" value="admin" autocomplete="username" />
       </div>
+      <div class="field">
+        <label>密码</label>
+        <input id="password" type="password" value="yalan2026" autocomplete="current-password" />
+      </div>
+      <button class="btn btn-primary" id="loginBtn" style="width:100%;height:36px">登 录</button>
       <div class="msg" id="loginMsg"></div>
-    </section>
+    </div>
+  </div>
 
-    <section class="panel hidden" id="mainPanel">
-      <div class="grid" id="stats"></div>
-      <div class="row" style="margin-bottom:12px">
-        <a href="/" target="_blank">打开溯源页首页</a>
-        <a href="/demo" target="_blank">演示二维码页</a>
-        <button class="ghost" id="refreshBtn">刷新数据</button>
-        <button class="ghost" id="logoutBtn">退出</button>
-      </div>
-
-      <div class="panel" style="margin:0 0 14px">
-        <h3 style="margin:0 0 10px;font-size:15px">批量导入（JSON 行）</h3>
-        <p class="sub" style="margin:0 0 8px">字段：style_no, name, composition, standard_no, batch_no, production_date, inspector</p>
-        <textarea id="importBox">[
-  {"style_no":"YL-D-2641","name":"羊绒围巾","composition":"100% 山羊绒","standard_no":"GB/T 14255-2017","batch_no":"20261001-D","production_date":"2026-10-01","inspector":"周颖"}
-]</textarea>
-        <div class="row" style="margin-top:10px">
-          <button id="importBtn">导入并生码</button>
+  <div id="mainView" class="layout hidden">
+    <aside class="sider">
+      <div class="logo">质量追溯系统</div>
+      <nav>
+        <a class="active" href="#codes">溯源码管理</a>
+        <a href="#import">批量导入</a>
+        <a href="/demo" target="_blank">演示前台</a>
+        <a href="/" target="_blank">扫码预览</a>
+      </nav>
+    </aside>
+    <div class="main">
+      <header class="header">
+        <div class="crumb">首页 <b>溯源码管理</b></div>
+        <div class="link-row">
+          <button class="btn btn-default btn-sm" id="refreshBtn">刷新</button>
+          <button class="btn btn-default btn-sm" id="logoutBtn">退出</button>
         </div>
-        <div class="msg" id="importMsg"></div>
-      </div>
+      </header>
+      <div class="content">
+        <div class="stats" id="stats"></div>
 
-      <div class="panel" style="margin:0">
-        <h3 style="margin:0 0 10px;font-size:15px">溯源码列表</h3>
-        <div id="tableWrap">加载中…</div>
+        <section class="panel" id="import">
+          <div class="panel-hd">
+            <h2>批量导入并生成溯源码</h2>
+            <span style="color:var(--muted);font-size:12px">支持 JSON 行数据，校验失败整批不入库</span>
+          </div>
+          <div class="panel-bd">
+            <div class="form-row">
+              <div class="field">
+                <label>数据（JSON 数组）</label>
+                <textarea id="importBox">[
+  {
+    "style_no": "YL-D-2641",
+    "name": "羊绒围巾",
+    "composition": "100% 山羊绒",
+    "standard_no": "GB/T 14255-2017",
+    "batch_no": "20261001-D",
+    "production_date": "2026-10-01",
+    "inspector": "周颖"
+  }
+]</textarea>
+              </div>
+            </div>
+            <button class="btn btn-primary" id="importBtn">导入并生码</button>
+            <div class="msg" id="importMsg"></div>
+          </div>
+        </section>
+
+        <section class="panel" id="codes">
+          <div class="panel-hd">
+            <h2>溯源码列表</h2>
+          </div>
+          <div class="panel-bd table-wrap" id="tableWrap">加载中…</div>
+        </section>
       </div>
-    </section>
+    </div>
   </div>
 
   <script>
     const state = { token: localStorage.getItem("gt_token") || "" };
-
-    function $(id) { return document.getElementById(id); }
+    const $ = (id) => document.getElementById(id);
 
     async function api(path, options = {}) {
       const headers = { "Content-Type": "application/json" };
-      if (state.token) headers["Authorization"] = state.token;
-      // FastAPI demo uses simple token query fallback via header name token
-      if (state.token) headers["token"] = state.token;
+      if (state.token) {
+        headers["Authorization"] = `Bearer ${state.token}`;
+        headers["token"] = state.token;
+      }
       const res = await fetch(path, { ...options, headers });
       return res.json();
-    }
-
-    async function afterLogin() {
-      $("loginPanel").classList.add("hidden");
-      $("mainPanel").classList.remove("hidden");
-      await refresh();
     }
 
     async function refresh() {
       const sum = await api("/api/admin/summary");
       const codes = await api("/api/admin/codes");
       if (sum.code !== 0) {
-        $("tableWrap").innerHTML = "请重新登录";
+        $("tableWrap").innerHTML = '<div class="msg err">登录已失效，请重新登录</div>';
         return;
       }
       const s = sum.data;
       $("stats").innerHTML = `
-        <div class="stat"><div class="n">${s.products}</div><div class="l">款号</div></div>
-        <div class="stat"><div class="n">${s.batches}</div><div class="l">批次</div></div>
-        <div class="stat"><div class="n">${s.codes}</div><div class="l">溯源码</div></div>
-        <div class="stat"><div class="n">${s.active_codes}</div><div class="l">启用中</div></div>
+        <div class="stat"><div class="l">款号数量</div><div class="n">${s.products}</div></div>
+        <div class="stat"><div class="l">批次数量</div><div class="n">${s.batches}</div></div>
+        <div class="stat"><div class="l">溯源码总量</div><div class="n">${s.codes}</div></div>
+        <div class="stat"><div class="l">启用中</div><div class="n">${s.active_codes}</div></div>
       `;
       const rows = codes.data || [];
+      if (!rows.length) {
+        $("tableWrap").innerHTML = "暂无数据";
+        return;
+      }
       $("tableWrap").innerHTML = `
-        <table>
+        <table class="data">
           <thead>
-            <tr><th>溯源码</th><th>款号</th><th>品名</th><th>批次</th><th>厂家</th><th>状态</th><th>操作</th></tr>
+            <tr>
+              <th>溯源码</th><th>款号</th><th>品名</th><th>批次</th>
+              <th>生产厂家</th><th>生产日期</th><th>状态</th><th>操作</th>
+            </tr>
           </thead>
           <tbody>
             ${rows.map(r => `
@@ -172,21 +458,40 @@
                 <td>${r.product_name}</td>
                 <td>${r.batch_no}</td>
                 <td>${r.factory_name}</td>
-                <td><span class="pill ${r.status === "active" ? "" : "off"}">${r.status === "active" ? "启用" : "停用"}</span></td>
-                <td><button class="ghost" onclick="toggle(${r.id}, '${r.status === "active" ? "disabled" : "active"}')">${r.status === "active" ? "停用" : "启用"}</button></td>
+                <td>${r.production_date || "—"}</td>
+                <td>
+                  <span class="tag ${r.status === "active" ? "tag-ok" : "tag-off"}">
+                    ${r.status === "active" ? "启用" : "停用"}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-default btn-sm" data-toggle="${r.id}" data-status="${r.status === "active" ? "disabled" : "active"}">
+                    ${r.status === "active" ? "停用" : "启用"}
+                  </button>
+                </td>
               </tr>
             `).join("")}
           </tbody>
         </table>
       `;
+      $("tableWrap").querySelectorAll("[data-toggle]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          await api(`/api/admin/codes/${btn.dataset.toggle}`, {
+            method: "PATCH",
+            body: JSON.stringify({ status: btn.dataset.status }),
+          });
+          await refresh();
+        });
+      });
     }
 
-    window.toggle = async function (id, status) {
-      await api(`/api/admin/codes/${id}`, { method: "PATCH", body: JSON.stringify({ status }) });
+    async function afterLogin() {
+      $("loginView").classList.add("hidden");
+      $("mainView").classList.remove("hidden");
       await refresh();
-    };
+    }
 
-    $("loginBtn").onclick = async () => {
+    $("loginBtn").addEventListener("click", async () => {
       const json = await api("/api/admin/login", {
         method: "POST",
         body: JSON.stringify({
@@ -201,17 +506,16 @@
       }
       state.token = json.data.token;
       localStorage.setItem("gt_token", state.token);
-      $("loginMsg").textContent = "登录成功";
-      $("loginMsg").className = "msg";
+      $("loginMsg").textContent = "";
       await afterLogin();
-    };
+    });
 
-    $("importBtn").onclick = async () => {
+    $("importBtn").addEventListener("click", async () => {
       let rows;
       try {
         rows = JSON.parse($("importBox").value);
       } catch (e) {
-        $("importMsg").textContent = "JSON 解析失败";
+        $("importMsg").textContent = "JSON 解析失败，请检查格式";
         $("importMsg").className = "msg err";
         return;
       }
@@ -219,20 +523,24 @@
         method: "POST",
         body: JSON.stringify({ rows }),
       });
-      $("importMsg").textContent = json.code === 0
-        ? json.message + "\n" + (json.data.created || []).map(x => `第${x.row}行 → ${x.code}`).join("\n")
-        : json.message;
-      $("importMsg").className = json.code === 0 ? "msg" : "msg err";
-      if (json.code === 0) await refresh();
-    };
+      if (json.code === 0) {
+        $("importMsg").textContent =
+          json.message + "\n" + (json.data.created || []).map(x => `第 ${x.row} 行 → ${x.code}`).join("\n");
+        $("importMsg").className = "msg";
+        await refresh();
+      } else {
+        $("importMsg").textContent = json.message;
+        $("importMsg").className = "msg err";
+      }
+    });
 
-    $("refreshBtn").onclick = refresh;
-    $("logoutBtn").onclick = () => {
+    $("refreshBtn").addEventListener("click", refresh);
+    $("logoutBtn").addEventListener("click", () => {
       state.token = "";
       localStorage.removeItem("gt_token");
-      $("mainPanel").classList.add("hidden");
-      $("loginPanel").classList.remove("hidden");
-    };
+      $("mainView").classList.add("hidden");
+      $("loginView").classList.remove("hidden");
+    });
 
     if (state.token) afterLogin();
   </script>

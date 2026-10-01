@@ -3,298 +3,277 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>正品溯源</title>
+  <title>产品溯源</title>
   <style>
-    :root {
-      --bg: #f3efe8;
-      --card: #fffdf9;
-      --ink: #1c1712;
-      --muted: #8a7f72;
-      --line: #e7dfd3;
-      --accent: #9a6b3f;
-      --accent-soft: #f0e4d4;
-      --ok: #2f5d50;
-      --ok-soft: #e5efeb;
-      --shadow: 0 18px 50px rgba(28, 23, 18, 0.08);
-      --radius: 22px;
-    }
-
+    /* Mature product-passport UI: clean white, tight type, label-style tables.
+       References: fashion DPP microsites (Rudholm/EON), Chinese quality labels,
+       Tabler/Element enterprise density — no gradients, glows, or decorative seals. */
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
     body {
-      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", -apple-system, sans-serif;
-      color: var(--ink);
-      background:
-        radial-gradient(1200px 500px at 50% -10%, #efe6d8 0%, transparent 60%),
-        var(--bg);
-      min-height: 100vh;
-      line-height: 1.6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: #f5f6f8;
+      color: #1f2329;
+      line-height: 1.55;
       -webkit-font-smoothing: antialiased;
+      font-size: 14px;
     }
 
-    .page {
-      width: min(440px, 100%);
+    .shell {
+      max-width: 480px;
       margin: 0 auto;
-      padding: 18px 16px 40px;
+      min-height: 100vh;
+      background: #fff;
+      border-left: 1px solid #e5e6eb;
+      border-right: 1px solid #e5e6eb;
     }
 
-    .hero {
-      background: linear-gradient(160deg, #241c15 0%, #3a2c20 55%, #4a3726 100%);
-      color: #f7f1e8;
-      border-radius: 28px;
-      padding: 28px 22px 26px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-    }
-
-    .hero::after {
-      content: "";
-      position: absolute;
-      inset: auto -20% -40% auto;
-      width: 220px;
-      height: 220px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(212, 175, 125, 0.35), transparent 70%);
-    }
-
-    .brand-row {
+    .topbar {
+      height: 48px;
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      position: relative;
-      z-index: 1;
+      padding: 0 16px;
+      border-bottom: 1px solid #e5e6eb;
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
-    .brand {
-      font-size: 12px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      opacity: 0.78;
-    }
-
-    .seal {
-      width: 74px;
-      height: 74px;
-      border-radius: 50%;
-      border: 1px solid rgba(247, 241, 232, 0.35);
-      display: grid;
-      place-items: center;
-      text-align: center;
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      line-height: 1.25;
-      background: rgba(255, 255, 255, 0.06);
-      flex-shrink: 0;
-    }
-
-    .hero h1 {
-      margin: 18px 0 8px;
-      font-size: 28px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero .sub {
-      margin: 0;
-      opacity: 0.82;
-      font-size: 14px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 18px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      font-size: 12px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #8fd6b8;
-      box-shadow: 0 0 0 4px rgba(143, 214, 184, 0.18);
-    }
-
-    .code-chip {
-      margin-top: 16px;
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 12px;
-      background: rgba(0, 0, 0, 0.18);
-      border: 1px dashed rgba(255, 255, 255, 0.22);
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    .topbar .brand {
       font-size: 13px;
-      letter-spacing: 0.08em;
-      position: relative;
-      z-index: 1;
-    }
-
-    .card {
-      margin-top: 14px;
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 18px 18px 8px;
-      box-shadow: 0 10px 30px rgba(28, 23, 18, 0.04);
-    }
-
-    .card h2 {
-      margin: 0 0 12px;
-      font-size: 15px;
+      color: #1f2329;
       font-weight: 600;
-      letter-spacing: 0.08em;
-      color: var(--accent);
-    }
-
-    .kv {
-      display: grid;
-      grid-template-columns: 92px 1fr;
-      gap: 8px 12px;
-      padding: 11px 0;
-      border-top: 1px solid var(--line);
-      font-size: 14px;
-    }
-
-    .kv:first-of-type { border-top: 0; padding-top: 2px; }
-    .kv .k { color: var(--muted); }
-    .kv .v { color: var(--ink); word-break: break-word; }
-
-    .product-name {
-      font-size: 22px;
-      font-weight: 600;
-      margin: 0 0 4px;
       letter-spacing: 0.02em;
     }
 
-    .product-meta {
-      color: var(--muted);
-      font-size: 13px;
-      margin: 0 0 14px;
+    .topbar .brand span {
+      color: #86909c;
+      font-weight: 400;
+      margin-left: 6px;
     }
 
-    .timeline {
+    .topbar .status {
+      font-size: 12px;
+      color: #00b42a;
+      background: #e8ffea;
+      border: 1px solid #aff0b5;
+      border-radius: 2px;
+      padding: 2px 8px;
+    }
+
+    .product-head {
+      display: flex;
+      gap: 14px;
+      padding: 16px;
+      border-bottom: 1px solid #e5e6eb;
+    }
+
+    .product-visual {
+      width: 96px;
+      height: 96px;
+      border: 1px solid #e5e6eb;
+      border-radius: 2px;
+      background: #f7f8fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .product-visual svg { width: 56px; height: 56px; }
+
+    .product-title {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .product-title h1 {
+      margin: 0 0 6px;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      color: #86909c;
+      font-size: 12px;
+    }
+
+    .meta-row b {
+      color: #4e5969;
+      font-weight: 500;
+    }
+
+    .code-line {
+      margin-top: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      color: #1f2329;
+      background: #f2f3f5;
+      border: 1px solid #e5e6eb;
+      border-radius: 2px;
+      padding: 6px 8px;
+      word-break: break-all;
+    }
+
+    .section {
+      padding: 14px 16px 4px;
+    }
+
+    .section + .section {
+      border-top: 8px solid #f5f6f8;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1f2329;
+    }
+
+    .section-title::before {
+      content: "";
+      width: 3px;
+      height: 14px;
+      background: #165dff;
+      border-radius: 1px;
+    }
+
+    .desc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+
+    .desc-table th,
+    .desc-table td {
+      padding: 8px 0;
+      border-bottom: 1px solid #f2f3f5;
+      vertical-align: top;
+      font-size: 13px;
+    }
+
+    .desc-table th {
+      width: 88px;
+      text-align: left;
+      color: #86909c;
+      font-weight: 400;
+    }
+
+    .desc-table td {
+      color: #1f2329;
+      word-break: break-word;
+    }
+
+    .desc-table tr:last-child th,
+    .desc-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .steps {
+      margin: 0 0 12px;
+      padding: 0;
       list-style: none;
-      margin: 0;
-      padding: 4px 0 10px;
     }
 
-    .timeline li {
-      position: relative;
-      padding: 0 0 18px 22px;
+    .steps li {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f2f3f5;
     }
 
-    .timeline li::before {
-      content: "";
-      position: absolute;
-      left: 5px;
-      top: 7px;
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 0 4px var(--accent-soft);
+    .steps li:last-child { border-bottom: 0; }
+
+    .steps .t {
+      color: #86909c;
+      font-size: 12px;
     }
 
-    .timeline li::after {
-      content: "";
-      position: absolute;
-      left: 9px;
-      top: 18px;
-      bottom: 0;
-      width: 1px;
-      background: var(--line);
-    }
-
-    .timeline li:last-child::after { display: none; }
-    .timeline .step { font-weight: 600; font-size: 14px; }
-    .timeline .time { color: var(--muted); font-size: 12px; margin: 2px 0; }
-    .timeline .note { color: #5c5248; font-size: 13px; }
-
-    .trust {
-      margin: 16px 0 0;
-      padding: 14px 16px;
-      border-radius: 18px;
-      background: var(--ok-soft);
-      color: var(--ok);
+    .steps .n {
+      font-weight: 600;
       font-size: 13px;
-      border: 1px solid #cfe0d9;
+      margin-bottom: 2px;
+    }
+
+    .steps .d {
+      color: #4e5969;
+      font-size: 12px;
+    }
+
+    .notice {
+      margin: 8px 0 16px;
+      padding: 10px 12px;
+      background: #f7f8fa;
+      border: 1px solid #e5e6eb;
+      border-radius: 2px;
+      color: #4e5969;
+      font-size: 12px;
+      line-height: 1.7;
     }
 
     .footer {
-      margin-top: 18px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 12px;
+      padding: 16px;
+      border-top: 1px solid #e5e6eb;
+      color: #86909c;
+      font-size: 11px;
       line-height: 1.8;
+      text-align: center;
     }
 
-    .error {
-      margin: 40px auto;
-      max-width: 440px;
-      text-align: center;
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      padding: 36px 24px;
+    .loading, .error {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 60vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #86909c;
+      background: #fff;
     }
 
     .error h1 {
-      margin: 0 0 10px;
-      font-size: 20px;
+      margin: 0;
+      font-size: 18px;
+      color: #1f2329;
     }
 
     .error p {
-      color: var(--muted);
       margin: 0;
-    }
-
-    .loading {
-      min-height: 60vh;
-      display: grid;
-      place-items: center;
-      color: var(--muted);
-      letter-spacing: 0.12em;
       font-size: 13px;
     }
 
-    .badge-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin: 10px 0 4px;
-    }
-
-    .tag {
-      padding: 5px 10px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent);
+    .badge-soft {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 2px;
+      background: #f2f3f5;
+      color: #4e5969;
       font-size: 12px;
     }
   </style>
 </head>
 <body>
-  <div id="app" class="loading">溯源信息加载中…</div>
+  <div id="app" class="loading">正在查询溯源信息…</div>
 
   <script>
     function codeFromPath() {
       const path = location.pathname.replace(/\/+$/, "");
       const parts = path.split("/").filter(Boolean);
       if (parts[0] === "t" && parts[1]) return decodeURIComponent(parts[1]).toUpperCase();
-      return new URLSearchParams(location.search).get("code")?.toUpperCase() || "";
+      return (new URLSearchParams(location.search).get("code") || "").toUpperCase();
     }
 
     function esc(s) {
@@ -306,8 +285,11 @@
     }
 
     function fmtDate(d) {
-      if (!d) return "—";
-      return String(d).replaceAll("-", ".");
+      return d ? String(d).replaceAll("-", ".") : "—";
+    }
+
+    function row(k, v) {
+      return `<tr><th>${esc(k)}</th><td>${esc(v || "—")}</td></tr>`;
     }
 
     async function main() {
@@ -315,7 +297,7 @@
       const code = codeFromPath();
       if (!code) {
         app.className = "error";
-        app.innerHTML = "<h1>缺少溯源码</h1><p>请扫描吊牌上的二维码进行查询</p>";
+        app.innerHTML = "<h1>无法查询</h1><p>请扫描吊牌或洗水唛上的溯源二维码</p>";
         return;
       }
 
@@ -324,80 +306,103 @@
         const json = await res.json();
         if (json.code !== 0 || !json.data) {
           app.className = "error";
-          app.innerHTML = `<h1>${esc(json.message || "未查询到溯源信息")}</h1><p>请确认二维码完整，或联系品牌客服</p>`;
+          app.innerHTML = `<h1>未查询到溯源信息</h1><p>${esc(json.message || "请核对二维码是否完整，或联系厂家客服")}</p>`;
           return;
         }
 
         const d = json.data;
-        const f = d.factory;
-        const p = d.product;
-        const b = d.batch;
+        const f = d.factory || {};
+        const p = d.product || {};
+        const b = d.batch || {};
+        const timeline = d.timeline || [];
 
-        app.className = "page";
+        app.className = "shell";
         app.innerHTML = `
-          <section class="hero">
-            <div class="brand-row">
-              <div class="brand">${esc(f.brand || "BRAND")}</div>
-              <div class="seal">正品<br/>溯源<br/>认证</div>
+          <header class="topbar">
+            <div class="brand">${esc(f.brand || "品牌溯源")}<span>产品档案</span></div>
+            <div class="status">已核验</div>
+          </header>
+
+          <div class="product-head">
+            <div class="product-visual" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="14" width="44" height="40" stroke="#c9cdd4" stroke-width="2"/>
+                <path d="M22 14c0-4 4.5-8 10-8s10 4 10 8" stroke="#c9cdd4" stroke-width="2"/>
+                <path d="M22 28h20M22 36h14" stroke="#c9cdd4" stroke-width="2"/>
+              </svg>
             </div>
-            <h1>${esc(p.name || "服装溯源")}</h1>
-            <p class="sub">这件衣服的生产信息已可追溯 · 可放心购买与穿着</p>
-            <div class="status-pill"><span class="dot"></span> 官方数据库核验通过</div>
-            <div class="code-chip">溯源码 ${esc(d.code)}</div>
-          </section>
-
-          <section class="card">
-            <h2>产品信息</h2>
-            <div class="product-name">${esc(p.name)}</div>
-            <div class="product-meta">${esc(p.category || "服装")} · ${esc(p.color || "")} · ${esc(p.size_range || "")}</div>
-            <div class="badge-row">
-              <span class="tag">${esc(b.grade || "合格")}</span>
-              <span class="tag">批次 ${esc(b.batch_no)}</span>
+            <div class="product-title">
+              <h1>${esc(p.name || "服装产品")}</h1>
+              <div class="meta-row">
+                <span><b>款号</b> ${esc(p.style_no)}</span>
+                <span><b>批次</b> ${esc(b.batch_no)}</span>
+                <span class="badge-soft">${esc(b.grade || "合格")}</span>
+              </div>
+              <div class="meta-row" style="margin-top:6px">
+                <span><b>颜色</b> ${esc(p.color || "—")}</span>
+                <span><b>尺码</b> ${esc(p.size_range || "—")}</span>
+              </div>
+              <div class="code-line">溯源码 ${esc(d.code)}</div>
             </div>
-            <div class="kv"><div class="k">款号</div><div class="v">${esc(p.style_no)}</div></div>
-            <div class="kv"><div class="k">主要成分</div><div class="v">${esc(p.composition)}</div></div>
-            <div class="kv"><div class="k">执行标准</div><div class="v">${esc(p.standard_no)}</div></div>
-            <div class="kv"><div class="k">洗涤说明</div><div class="v">${esc(p.care)}</div></div>
+          </div>
+
+          <section class="section">
+            <h2 class="section-title">产品信息</h2>
+            <table class="desc-table">
+              ${row("品名", p.name)}
+              ${row("类别", p.category)}
+              ${row("主要成分", p.composition)}
+              ${row("执行标准", p.standard_no)}
+              ${row("洗涤保养", p.care)}
+            </table>
           </section>
 
-          <section class="card">
-            <h2>生产溯源</h2>
-            <div class="kv"><div class="k">生产厂家</div><div class="v">${esc(f.name)}</div></div>
-            <div class="kv"><div class="k">生产地址</div><div class="v">${esc(f.address)}</div></div>
-            <div class="kv"><div class="k">生产日期</div><div class="v">${fmtDate(b.production_date)}</div></div>
-            <div class="kv"><div class="k">生产车间</div><div class="v">${esc(b.workshop)}</div></div>
-            <div class="kv"><div class="k">检验员</div><div class="v">${esc(b.inspector)}</div></div>
-            <div class="kv"><div class="k">营业执照</div><div class="v">${esc(f.license_no)}</div></div>
+          <section class="section">
+            <h2 class="section-title">生产信息</h2>
+            <table class="desc-table">
+              ${row("生产厂家", f.name)}
+              ${row("生产地址", f.address)}
+              ${row("生产日期", fmtDate(b.production_date))}
+              ${row("生产车间", b.workshop)}
+              ${row("检验员", b.inspector)}
+              ${row("质量等级", b.grade)}
+              ${row("营业执照", f.license_no)}
+            </table>
           </section>
 
-          <section class="card">
-            <h2>生产履历</h2>
-            <ul class="timeline">
-              ${(d.timeline || []).map(t => `
+          <section class="section">
+            <h2 class="section-title">生产履历</h2>
+            <ul class="steps">
+              ${timeline.map(t => `
                 <li>
-                  <div class="step">${esc(t.step)}</div>
-                  <div class="time">${esc(t.time)}</div>
-                  <div class="note">${esc(t.note)}</div>
+                  <div class="t">${esc(t.time)}</div>
+                  <div>
+                    <div class="n">${esc(t.step)}</div>
+                    <div class="d">${esc(t.note)}</div>
+                  </div>
                 </li>
               `).join("")}
             </ul>
           </section>
 
-          <section class="card">
-            <h2>厂家信息</h2>
-            <div class="kv"><div class="k">品牌</div><div class="v">${esc(f.brand)}</div></div>
-            <div class="kv"><div class="k">联系部门</div><div class="v">${esc(f.contact)}</div></div>
-            <div class="kv"><div class="k">联系电话</div><div class="v">${esc(f.phone)}</div></div>
-            <div class="kv"><div class="k">企业简介</div><div class="v">${esc(f.intro)}</div></div>
+          <section class="section">
+            <h2 class="section-title">厂家信息</h2>
+            <table class="desc-table">
+              ${row("企业名称", f.name)}
+              ${row("品牌", f.brand)}
+              ${row("联系部门", f.contact)}
+              ${row("联系电话", f.phone)}
+              ${row("企业简介", f.intro)}
+            </table>
+            <div class="notice">
+              以上信息由生产厂家在溯源系统登记并对内容真实性负责。如有疑问请保留吊牌，联系厂家核实。
+            </div>
           </section>
 
-          <div class="trust">
-            本页面信息由品牌厂家授权发布。若对货品有疑问，请保留吊牌并联系厂家核实。
-          </div>
-          <div class="footer">
-            ${esc(f.name)} · 质量溯源服务<br/>
-            查询时间仅供展示 · 演示环境
-          </div>
+          <footer class="footer">
+            ${esc(f.name)}<br/>
+            质量追溯平台 · 仅供购买渠道与质量查询
+          </footer>
         `;
       } catch (e) {
         app.className = "error";
