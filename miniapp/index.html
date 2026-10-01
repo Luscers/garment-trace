@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#f7f8fa" />
+  <title>服装溯源小程序</title>
+  <style>
+    :root {
+      --wx-green: #07c160;
+      --wx-green-dark: #06ad56;
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --text: #191919;
+      --sub: #888;
+      --sub2: #576b95;
+      --line: #e5e5e5;
+      --danger: #fa5151;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #000;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Phone shell for simulator / desktop preview */
+    #phone {
+      width: min(414px, 100vw);
+      height: min(896px, 100dvh);
+      min-height: 640px;
+      margin: 0 auto;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px #333;
+    }
+
+    @media (max-width: 430px) {
+      body { background: var(--bg); }
+      #phone {
+        width: 100vw;
+        height: 100dvh;
+        min-height: 0;
+        box-shadow: none;
+      }
+    }
+
+    /* Capsule-style nav (mini program) */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding-top: var(--safe-top);
+      background: #ededed;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: calc(44px + var(--safe-top));
+      font-size: 17px;
+      font-weight: 500;
+      color: #000;
+    }
+    .nav .cap {
+      position: absolute;
+      right: 8px;
+      top: calc(var(--safe-top) + 7px);
+      width: 87px;
+      height: 32px;
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.6);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+    }
+    .nav .cap i {
+      width: 10px; height: 10px;
+      border: 2px solid #333;
+      border-radius: 50%;
+      position: relative;
+      opacity: 0.75;
+    }
+    .nav .cap i.dot {
+      width: 4px; height: 4px; border: 0; background: #333; border-radius: 50%;
+    }
+    .nav .back {
+      position: absolute;
+      left: 8px;
+      top: var(--safe-top);
+      width: 44px; height: 44px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: #000;
+      background: none;
+      border: 0;
+      cursor: pointer;
+    }
+    .nav .back.show { display: flex; }
+
+    .pages { height: calc(100% - 44px - var(--safe-top)); position: relative; }
+    .page {
+      display: none;
+      position: absolute;
+      inset: 0;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: calc(64px + var(--safe-bottom));
+      background: var(--bg);
+    }
+    .page.active { display: block; }
+
+    .section {
+      background: var(--panel);
+      margin-top: 8px;
+      padding: 0 16px;
+    }
+    .section h3 {
+      margin: 0;
+      padding: 14px 0 10px;
+      font-size: 15px;
+      font-weight: 500;
+      border-bottom: 0.5px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .section h3::before {
+      content: "";
+      width: 3px;
+      height: 14px;
+      background: var(--wx-green);
+      border-radius: 1px;
+    }
+
+    .kv {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 0.5px solid var(--line);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .kv:last-child { border-bottom: 0; }
+    .kv .k { width: 76px; flex-shrink: 0; color: var(--sub); }
+    .kv .v { flex: 1; word-break: break-word; color: var(--text); }
+
+    /* Home */
+    .hero {
+      background: linear-gradient(180deg, #e8f9ef 0%, var(--bg) 100%);
+      padding: 20px 16px 16px;
+    }
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-mark {
+      width: 48px; height: 48px;
+      border-radius: 10px;
+      background: var(--wx-green);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+    }
+    .brand-row h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .brand-row p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--sub);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .btn {
+      height: 44px;
+      border: 0;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-primary {
+      background: var(--wx-green);
+      color: #fff;
+    }
+    .btn-primary:active { background: var(--wx-green-dark); }
+    .btn-plain {
+      background: #fff;
+      color: var(--wx-green);
+      border: 1px solid var(--wx-green);
+    }
+    .btn-plain:active { background: #f2faf5; }
+    .btn-block { width: 100%; grid-column: 1 / -1; }
+
+    .tip-card {
+      margin-top: 12px;
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--sub);
+      line-height: 1.7;
+    }
+
+    .sample-list { margin-top: 8px; }
+    .sample-item {
+      background: var(--panel);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 0.5px solid var(--line);
+      cursor: pointer;
+    }
+    .sample-item:active { background: #fafafa; }
+    .sample-item .thumb {
+      width: 44px; height: 44px;
+      background: #f0f1f3;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #bbb;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .sample-item .info { flex: 1; min-width: 0; }
+    .sample-item .info b { display: block; font-size: 15px; font-weight: 500; }
+    .sample-item .info span { font-size: 12px; color: var(--sub); }
+    .sample-item .arr { color: #c7c7cc; font-size: 14px; }
+
+    /* Scan */
+    .scan-stage {
+      background: #111;
+      min-height: calc(100% - 0px);
+      color: #fff;
+      padding: 24px 20px calc(24px + var(--safe-bottom));
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+    .scan-stage.on { display: flex; }
+    .scan-frame {
+      width: 220px; height: 220px;
+      margin-top: 24px;
+      position: relative;
+      background:
+        linear-gradient(var(--wx-green), var(--wx-green)) left top / 28px 3px no-repeat,
+        linear-gradient(var(--wx-green), var(--wx-green)) left top / 3px 28px no-repeat,
+        linear-gradient(var(--wx-green), var(--wx-green)) right top / 28px 3px no-repeat,
+        linear-gradient(var(--wx-green), var(--wx-green)) right top / 3px 28px no-repeat,
+        linear-gradient(var(--wx-green), var(--wx-green)) left bottom / 28px 3px no-repeat,
+        linear-gradient(var(--wx-green), var(--wx-green)) left bottom / 3px 28px no-repeat,
+        linear-gradient(var(--wx-green), var(--wx-green)) right bottom / 28px 3px no-repeat,
+        linear-gradient(var(--wx-green), var(--wx-green)) right bottom / 3px 28px no-repeat;
+      background-color: rgba(255,255,255,0.04);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .scan-frame .laser {
+      position: absolute;
+      left: 8px; right: 8px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--wx-green), transparent);
+      animation: laser 2s linear infinite;
+      box-shadow: 0 0 8px var(--wx-green);
+    }
+    @keyframes laser {
+      0% { top: 10px; }
+      50% { top: 200px; }
+      100% { top: 10px; }
+    }
+    .scan-hint {
+      margin-top: 18px;
+      font-size: 14px;
+      opacity: 0.75;
+      text-align: center;
+      line-height: 1.7;
+    }
+    .scan-manual {
+      width: 100%;
+      max-width: 320px;
+      margin-top: 28px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px;
+      padding: 14px;
+    }
+    .scan-manual input {
+      width: 100%;
+      height: 40px;
+      border: 0;
+      border-radius: 4px;
+      padding: 0 12px;
+      font-size: 15px;
+      outline: none;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+    .scan-manual .btn { margin-top: 10px; }
+
+    /* Result header */
+    .result-head {
+      background: var(--panel);
+      padding: 16px;
+      display: flex;
+      gap: 12px;
+      border-bottom: 0.5px solid var(--line);
+    }
+    .result-head .visual {
+      width: 72px; height: 72px;
+      background: #f0f1f3;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #c0c4cc;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .result-head h2 {
+      margin: 0 0 6px;
+      font-size: 17px;
+      font-weight: 600;
+    }
+    .result-head .meta {
+      font-size: 12px;
+      color: var(--sub);
+      line-height: 1.6;
+    }
+    .badge-ok {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 2px 8px;
+      font-size: 12px;
+      color: var(--wx-green);
+      background: #e8f9ef;
+      border: 1px solid #b7ebc9;
+      border-radius: 3px;
+    }
+    .code-chip {
+      margin: 10px 16px 0;
+      font-size: 12px;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      color: #333;
+      background: #f0f1f3;
+      border: 0.5px solid var(--line);
+      border-radius: 4px;
+      padding: 8px 10px;
+    }
+    .empty {
+      padding: 80px 32px;
+      text-align: center;
+      color: var(--sub);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    .empty b { display: block; color: var(--text); font-size: 16px; margin-bottom: 6px; }
+
+    /* About / mine */
+    .profile-card {
+      margin: 12px 16px 0;
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .avatar {
+      width: 52px; height: 52px;
+      border-radius: 6px;
+      background: var(--wx-green);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    /* Tab bar */
+    .tabbar {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      z-index: 30;
+      height: calc(52px + var(--safe-bottom));
+      padding-bottom: var(--safe-bottom);
+      background: #f7f7f7;
+      border-top: 0.5px solid #dcdcdc;
+      display: flex;
+    }
+    .tab {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      color: #7a7e83;
+      font-size: 10px;
+      cursor: pointer;
+      background: none;
+      border: 0;
+      padding: 0;
+    }
+    .tab .ico {
+      width: 22px; height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tab .ico svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+    .tab.active { color: var(--wx-green); }
+
+    /* Qr modal-ish panel */
+    .qr-wrap {
+      text-align: center;
+      padding: 8px 16px 24px;
+    }
+    .qr-wrap img, .qr-wrap canvas {
+      width: min(240px, 70vw);
+      height: auto;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .qr-list { display: grid; gap: 12px; margin-top: 8px; }
+    .qr-card {
+      background: var(--panel);
+      border: 0.5px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .qr-card img { width: 88px; height: 88px; padding: 4px; border: 0.5px solid var(--line); background: #fff; }
+    .qr-card .t { flex: 1; text-align: left; font-size: 14px; line-height: 1.5; }
+    .qr-card .t small { color: var(--sub); font-size: 12px; display: block; word-break: break-all; }
+    .qr-card .btn { height: 32px; font-size: 13px; padding: 0 10px; }
+
+    .footer-note {
+      padding: 20px 16px 28px;
+      text-align: center;
+      font-size: 11px;
+      color: #b2b2b2;
+      line-height: 1.7;
+    }
+
+    .toast {
+      position: absolute;
+      left: 50%;
+      top: 45%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.78);
+      color: #fff;
+      font-size: 14px;
+      padding: 12px 18px;
+      border-radius: 6px;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      max-width: 80%;
+      text-align: center;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div id="phone" role="application" aria-label="服装溯源小程序">
+    <div class="nav" id="nav">
+      <button class="back" id="navBack" type="button" aria-label="返回">‹</button>
+      <span id="navTitle">服装溯源</span>
+      <div class="cap" aria-hidden="true"><i></i><i class="dot"></i></div>
+    </div>
+
+    <div class="pages">
+      <!-- Home -->
+      <section class="page active" id="page-home" data-title="服装溯源">
+        <div class="hero">
+          <div class="brand-row">
+            <div class="logo-mark">YALAN</div>
+            <div>
+              <h1>雅澜 · 服装溯源</h1>
+              <p>扫码查询生产厂家与批次信息</p>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="button" data-go="scan">扫一扫溯源</button>
+            <button class="btn btn-plain" type="button" data-go="codes">我的样码</button>
+            <button class="btn btn-plain btn-block" type="button" data-go="input">输入溯源码查询</button>
+          </div>
+          <div class="tip-card">
+            对准吊牌或洗水唛上的二维码即可查询。演示环境内置 3 个样码，也可输入码号查看档案。
+          </div>
+        </div>
+
+        <div class="sample-list">
+          <div class="sample-item" data-code="GT-A01-8F3K2M">
+            <div class="thumb">🧥</div>
+            <div class="info">
+              <b>精纺羊毛大衣</b>
+              <span>款号 YL-W-2601 · 批次 20260912-W</span>
+            </div>
+            <div class="arr">›</div>
+          </div>
+          <div class="sample-item" data-code="GT-A02-5R9W1P">
+            <div class="thumb">👗</div>
+            <div class="info">
+              <b>真丝印花连衣裙</b>
+              <span>款号 YL-S-2618 · 批次 20260918-S</span>
+            </div>
+            <div class="arr">›</div>
+          </div>
+          <div class="sample-item" data-code="GT-B01-7N4Q6X">
+            <div class="thumb">👔</div>
+            <div class="info">
+              <b>精梳棉衬衫</b>
+              <span>款号 YL-M-2630 · 批次 20260922-M</span>
+            </div>
+            <div class="arr">›</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scan -->
+      <section class="page" id="page-scan" data-title="扫码">
+        <div class="scan-stage on" id="scanStage">
+          <div class="scan-frame"><div class="laser"></div></div>
+          <div class="scan-hint">
+            将吊牌二维码放入框内<br/>（演示：下方选择样码或输入码号）
+          </div>
+          <div class="scan-manual">
+            <input id="scanInput" type="text" placeholder="例如 GT-A01-8F3K2M" autocomplete="off" />
+            <button class="btn btn-primary" type="button" id="scanSubmit">查询溯源</button>
+          </div>
+          <div class="scan-hint" style="margin-top:20px;font-size:13px;opacity:0.55">
+            正式小程序将调用 wx.scanCode 识别相机二维码
+          </div>
+        </div>
+      </section>
+
+      <!-- Input -->
+      <section class="page" id="page-input" data-title="输入码查询">
+        <div class="section" style="margin-top:12px">
+          <h3>手动输入</h3>
+          <div style="padding:16px 0">
+            <input id="manualCode" style="width:100%;height:44px;border:0.5px solid var(--line);border-radius:6px;padding:0 12px;font-size:15px;outline:none;text-align:center;letter-spacing:1px"
+              placeholder="输入吊牌上的溯源码" autocomplete="off" />
+            <button class="btn btn-primary" style="width:100%;margin-top:12px" type="button" id="manualSubmit">立即查询</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Result -->
+      <section class="page" id="page-result" data-title="溯源结果">
+        <div id="resultBody"></div>
+      </section>
+
+      <!-- Codes -->
+      <section class="page" id="page-codes" data-title="样码">
+        <div class="section" style="margin-top:12px;padding-bottom:8px">
+          <h3>演示二维码（可保存后用其他手机扫）</h3>
+        </div>
+        <div class="qr-wrap">
+          <div class="qr-list" id="qrList"></div>
+        </div>
+        <div class="footer-note">
+          正式环境由后台生成小程序码；<br/>本页二维码为演示用，指向当前 App 内样码数据。
+        </div>
+      </section>
+
+      <!-- About -->
+      <section class="page" id="page-about" data-title="我的">
+        <div class="profile-card">
+          <div class="avatar">YALAN</div>
+          <div>
+            <div style="font-size:16px;font-weight:600">雅澜服饰溯源</div>
+            <div style="font-size:12px;color:var(--sub);margin-top:4px">个人演示版 · 单机数据</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>功能说明</h3>
+          <div class="kv"><div class="k">扫码</div><div class="v">输入或选择样码模拟吊牌扫码</div></div>
+          <div class="kv"><div class="k">查询</div><div class="v">展示厂家、地址、成分、批次、标准</div></div>
+          <div class="kv"><div class="k">数据</div><div class="v">内置 3 条样例，离线可用</div></div>
+        </div>
+
+        <div class="section">
+          <h3>个人小程序上线要点</h3>
+          <div class="kv"><div class="k">注册</div><div class="v">mp.weixin.qq.com 个人主体，免费拿 AppID</div></div>
+          <div class="kv"><div class="k">认证</div><div class="v">个人无需 300 元认证（也不可认证）</div></div>
+          <div class="kv"><div class="k">预览</div><div class="v">开发者工具真机预览，体验版先给指定人扫</div></div>
+          <div class="kv"><div class="k">他人扫描</div><div class="v">需备案 + 审核发布后，他人才能任意扫码</div></div>
+        </div>
+      </section>
+    </div>
+
+    <nav class="tabbar" id="tabbar">
+      <button class="tab active" type="button" data-tab="home">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z"/></svg></span>
+        首页
+      </button>
+      <button class="tab" type="button" data-tab="scan">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10"/></svg></span>
+        扫码
+      </button>
+      <button class="tab" type="button" data-tab="codes">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M5 7h4v4H5zM15 7h4v4h-4zM5 13h4v4H5zM15 13h4v4h-4z"/></svg></span>
+        样码
+      </button>
+      <button class="tab" type="button" data-tab="about">
+        <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 19c1.5-3 4-4.5 6.5-4.5S16.5 16 18 19"/></svg></span>
+        我的
+      </button>
+    </nav>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script>
+    /* Sample catalog mirrors FastAPI seed data (offline-first for simulator). */
+    const DB = {
+      "GT-A01-8F3K2M": {
+        code: "GT-A01-8F3K2M",
+        factory: {
+          name: "宁波雅澜服饰有限公司",
+          brand: "雅澜 YALAN",
+          address: "浙江省宁波市海曙区望春工业园雅澜路 18 号",
+          license_no: "91330200MA2AF1XY3K",
+          contact: "品质管理部",
+          phone: "0574-8888-6688",
+          intro: "专注中高端女装成衣制造 18 年，服务国内外品牌 OEM/ODM，通过 ISO9001 质量管理体系认证。"
+        },
+        product: {
+          style_no: "YL-W-2601",
+          name: "精纺羊毛大衣",
+          category: "女装 / 大衣",
+          composition: "80% 羊毛 · 20% 聚酯纤维",
+          standard_no: "GB/T 2666-2017",
+          color: "燕麦色",
+          size_range: "S / M / L / XL",
+          care: "干洗 · 低温熨烫 · 悬挂收纳"
+        },
+        batch: {
+          batch_no: "20260912-W",
+          production_date: "2026-09-12",
+          inspector: "王敏",
+          workshop: "一车间",
+          grade: "一等品"
+        }
+      },
+      "GT-A02-5R9W1P": {
+        code: "GT-A02-5R9W1P",
+        factory: {
+          name: "宁波雅澜服饰有限公司",
+          brand: "雅澜 YALAN",
+          address: "浙江省宁波市海曙区望春工业园雅澜路 18 号",
+          license_no: "91330200MA2AF1XY3K",
+          contact: "品质管理部",
+          phone: "0574-8888-6688",
+          intro: "专注中高端女装成衣制造 18 年，服务国内外品牌 OEM/ODM，通过 ISO9001 质量管理体系认证。"
+        },
+        product: {
+          style_no: "YL-S-2618",
+          name: "真丝印花连衣裙",
+          category: "女装 / 连衣裙",
+          composition: "100% 桑蚕丝",
+          standard_no: "GB/T 18132-2016",
+          color: "墨绿提花",
+          size_range: "S / M / L",
+          care: "手洗或干洗 · 避光晾干"
+        },
+        batch: {
+          batch_no: "20260918-S",
+          production_date: "2026-09-18",
+          inspector: "陈晓",
+          workshop: "精品线",
+          grade: "一等品"
+        }
+      },
+      "GT-B01-7N4Q6X": {
+        code: "GT-B01-7N4Q6X",
+        factory: {
+          name: "宁波雅澜服饰有限公司",
+          brand: "雅澜 YALAN",
+          address: "浙江省宁波市海曙区望春工业园雅澜路 18 号",
+          license_no: "91330200MA2AF1XY3K",
+          contact: "品质管理部",
+          phone: "0574-8888-6688",
+          intro: "专注中高端女装成衣制造 18 年，服务国内外品牌 OEM/ODM，通过 ISO9001 质量管理体系认证。"
+        },
+        product: {
+          style_no: "YL-M-2630",
+          name: "精梳棉衬衫",
+          category: "男装 / 衬衫",
+          composition: "100% 长绒棉",
+          standard_no: "GB/T 2660-2017",
+          color: "雾蓝",
+          size_range: "38 / 39 / 40 / 41 / 42",
+          care: "机洗温和 · 中温熨烫"
+        },
+        batch: {
+          batch_no: "20260922-M",
+          production_date: "2026-09-22",
+          inspector: "李强",
+          workshop: "二车间",
+          grade: "合格品"
+        }
+      }
+    };
+
+    const QR_DATA = {"GT-A01-8F3K2M": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGAQAAAACh4MLwAAABiElEQVR4nO2YMW7sMAxEH5cLbCnfIEehb7bYm8lHyQ3oMoAWk0L2Vgk+8IuERVQZYPNAaoYjm/j6PC/fFOCvAigBXH0QLrlmI2OUYAtJLklShme4pKzAdgHMVtjMVnt7fCyw2/WHCf5ZaQ8lN/XfI/i24u93iLGvv0bwVUXq7PcBT1ttgaZRhW0zM+AKt8STp5ktFdjQeVx9tD5lK6mATlHGaN0zICA8Ga0MmzpMPAahxNVr+Bs6Owa4NFoHaBX6doHNE+kxWh9TDnNtVWBrAmwB4gofdodt7GsBtkMLo+m4cq0X0qkEeCJ111QEdXIIIPXRJPXJOYpooT084wq33J4LwGhFtIDmHJuUQLhEK+Vv0DpNLvm04iL3TfJEGeNYWJ2mKmwZSmg6wnkyJ1uC7fVSOAc6t1gJtgTwV1LK8IwqHkJIYjdbuO4rMNhu7xV21vnOahow2GCzJWpk8iMjeQbHVhUUyUgnmzTtV+pKvIz3zseCzmApqYYWTp1m+OujCpv9/eP6r8on+0lLayoBrB8AAAAASUVORK5CYII=", "GT-A02-5R9W1P": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGAQAAAACh4MLwAAABjUlEQVR4nO2YMW7cQAxFH5cDbDm+QY5C3czIzaij5AABqNLALH4K7SYpbAdIYbPwQI3E5oHz5/+hTLy+bpc3CvBVgQuHmdkAYMAAMzPbWrARkjhsHLbgZptLqh59A7ONmS/fdHtizeSw8cEE/6iE1+61X+vTCN6sHAZwPL/Y9kkEryxVSHJpEcxkyiVVrBZsAF7x+wGgB9t9JVNr5iLO9wZsF45tHNsA/di8uCo5tttTE72hikUAi1Dhyi56U3pxgrkk5SK66K1gShULmOkFU2t20NvpIckUxOkkrlwt+nYBBix2AHbXd8Cry1lgJgQgyZUqevTtfkhVeMXDh2mkt4J5d2Av2ugNKdeUijVzneGl9Cb+9oA5E9+VEI369kgEZkq5ZvbRm1d4IenuvUSPrH/cQ+57mhCqTpkFrpRSBYR38bfHnAVmz8zTeJvkwgCM4NjOAX/83I34SIL32QCmDNaIhW4DIxqw/T1nxVXJYbD3mJ3/zFnMXOcX9bm/AXhx3sYh1CVP7esf139VfgERHT98A74fYgAAAABJRU5ErkJggg==", "GT-B01-7N4Q6X": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGAQAAAACh4MLwAAABjElEQVR4nO2YvW7kMAyEP64MbCm/Ef1m+2ryG1FlAC4mhZxcc8kBV2xYhFBhYZrBaPhnE3+P5+0LAH4RQAHQJIU3qWkJ6fnz3G7gkpgGZ8LTjiYpKuh2A8wO+rDdnzvZB9O2FzP4B+LJ2eK8x48x+BKZ1jSYjzc7ynBD4ZKahsLpg66VFwVy4SNPwz8PUCNP0RUDPPtIfN0LcLsxj20eG74EvGswj+dexG8oPCEhcQXLewV0u94UAG/h0ki8jt+alF3ZRwtaQFf2Cn5DQV4f3qTEm0aW0U3h2dVWldMo47eNudPDMAzBluQ8cvc6ebq6Q/aR0IIqftMAbxJd0mhBGb9dyNt+JufTDnDgHkVqrzcN+tDqp6t5ldANaawy0uK6Zh9V/BYuaVmuabRgTekluK0IFjdwRZGedWOamW19MC3nA9g486UMvkHWm5JdcLZP75XghtnBPK6xjdN2fzWD75E+bD/BsyvB9krc5mN1hLVE19id/+xZHwUEqdD8xjJ/H1cNqdJP7fcf138h7yKHRkKLCMl4AAAAAElFTkSuQmCC"};
+const pageIds = ["home", "scan", "input", "result", "codes", "about"];
+    let current = "home";
+    let stack = [];
+
+    const navTitle = document.getElementById("navTitle");
+    const navBack = document.getElementById("navBack");
+    const toastEl = document.getElementById("toast");
+
+    function esc(s) {
+      return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function showToast(msg, ms = 1600) {
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toastEl.classList.remove("show"), ms);
+    }
+
+    function fmtDate(d) {
+      return d ? String(d).replaceAll("-", ".") : "—";
+    }
+
+    function row(k, v) {
+      return `<div class="kv"><div class="k">${esc(k)}</div><div class="v">${esc(v || "—")}</div></div>`;
+    }
+
+    function go(id, push = true) {
+      if (!pageIds.includes(id)) return;
+      if (push && id !== current) stack.push(current);
+      current = id;
+      pageIds.forEach(p => {
+        document.getElementById("page-" + p).classList.toggle("active", p === id);
+      });
+      const page = document.getElementById("page-" + id);
+      navTitle.textContent = page.dataset.title || "服装溯源";
+      navBack.classList.toggle("show", id !== "home");
+      // tab highlight
+      document.querySelectorAll(".tab").forEach(t => {
+        t.classList.toggle("active", t.dataset.tab === id || (id === "input" && t.dataset.tab === "scan"));
+      });
+      // hide tabbar on result for stack page feel? keep visible for MP feel
+      document.getElementById("page-" + id).scrollTop = 0;
+    }
+
+    function back() {
+      const prev = stack.pop() || "home";
+      go(prev, false);
+    }
+
+    function lookup(raw) {
+      const code = String(raw || "").trim().toUpperCase();
+      if (!code) {
+        showToast("请输入溯源码");
+        return;
+      }
+      const item = DB[code];
+      if (!item) {
+        showToast("未查询到该溯源码");
+        showResult(null, code);
+        return;
+      }
+      showResult(item, code);
+    }
+
+    function showResult(item, code) {
+      const body = document.getElementById("resultBody");
+      if (!item) {
+        body.innerHTML = `
+          <div class="empty">
+            <b>未查询到溯源信息</b>
+            请核对吊牌二维码或码号是否正确
+            <div style="margin-top:16px">
+              <button class="btn btn-plain" type="button" data-go="scan" style="display:inline-flex;padding:0 16px">重新扫描</button>
+            </div>
+          </div>`;
+        go("result");
+        return;
+      }
+
+      const f = item.factory, p = item.product, b = item.batch;
+      body.innerHTML = `
+        <div class="result-head">
+          <div class="visual">👕</div>
+          <div style="flex:1;min-width:0">
+            <h2>${esc(p.name)}</h2>
+            <div class="meta">
+              ${esc(p.category)}<br/>
+              款号 ${esc(p.style_no)} · 批次 ${esc(b.batch_no)}
+            </div>
+            <span class="badge-ok">信息核验通过</span>
+          </div>
+        </div>
+        <div class="code-chip">溯源码 ${esc(item.code || code)}</div>
+
+        <div class="section">
+          <h3>产品信息</h3>
+          ${row("品名", p.name)}
+          ${row("类别", p.category)}
+          ${row("主要成分", p.composition)}
+          ${row("执行标准", p.standard_no)}
+          ${row("洗涤保养", p.care)}
+          ${row("颜色尺码", (p.color || "") + " / " + (p.size_range || ""))}
+        </div>
+
+        <div class="section">
+          <h3>生产信息</h3>
+          ${row("生产厂家", f.name)}
+          ${row("生产地址", f.address)}
+          ${row("生产日期", fmtDate(b.production_date))}
+          ${row("生产车间", b.workshop)}
+          ${row("检验员", b.inspector)}
+          ${row("质量等级", b.grade)}
+          ${row("营业执照", f.license_no)}
+        </div>
+
+        <div class="section">
+          <h3>厂家信息</h3>
+          ${row("企业名称", f.name)}
+          ${row("品牌", f.brand)}
+          ${row("联系部门", f.contact)}
+          ${row("联系电话", f.phone)}
+          ${row("企业简介", f.intro)}
+        </div>
+
+        <div class="footer-note">${esc(f.name)} · 演示版小程序数据</div>
+      `;
+      go("result");
+    }
+
+    function renderQrList() {
+      const list = document.getElementById("qrList");
+      const codes = Object.keys(DB);
+      list.innerHTML = codes.map(code => `
+        <div class="qr-card">
+          <img src="${QR_DATA[code] || ""}" alt="${esc(code)}" width="176" height="176" />
+          <div class="t">
+            <b>${esc(DB[code].product.name)}</b>
+            <small>${esc(code)}</small>
+            <button class="btn btn-primary" type="button" data-code="${esc(code)}" style="margin-top:8px">打开档案</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    // ---- events ----
+    document.getElementById("navBack").addEventListener("click", back);
+
+    document.querySelectorAll("[data-tab]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        stack = [];
+        go(btn.dataset.tab, false);
+        if (btn.dataset.tab === "codes") renderQrList();
+      });
+    });
+
+    document.getElementById("phone").addEventListener("click", (e) => {
+      const goBtn = e.target.closest("[data-go]");
+      if (goBtn) {
+        const t = goBtn.getAttribute("data-go");
+        go(t);
+        if (t === "codes") renderQrList();
+        return;
+      }
+      const sample = e.target.closest("[data-code]");
+      if (sample && !sample.matches("[data-go]")) {
+        lookup(sample.getAttribute("data-code"));
+      }
+    });
+
+    document.getElementById("scanSubmit").addEventListener("click", () => {
+      lookup(document.getElementById("scanInput").value);
+    });
+    document.getElementById("manualSubmit").addEventListener("click", () => {
+      lookup(document.getElementById("manualCode").value);
+    });
+    document.getElementById("manualCode").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") lookup(e.target.value);
+    });
+    document.getElementById("scanInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") lookup(e.target.value);
+    });
+
+    go("home", false);
+  </script>
+</body>
+</html>

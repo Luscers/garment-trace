@@ -1,17 +1,39 @@
 # 服装二维码溯源 Demo
 
-可扫码演示的 MVP（方案 A），对应设计规格 `docs/superpowers/specs/2026-10-01-garment-trace-qr-design.md`。
+面向服装厂招标场景的**一物一码溯源 MVP**：吊牌二维码 → 扫码/打开链接 → 展示生产厂家、生产地址、批次、成分等基础溯源信息。
 
-## 快速启动
+- 设计规格：`docs/superpowers/specs/2026-10-01-garment-trace-qr-design.md`
+- 实现计划：`docs/superpowers/specs/2026-10-01-garment-trace-qr-plan.md`
+- 视觉参考：`docs/ui-references.md`
+
+## 功能概览
+
+| 端 | 路径 | 说明 |
+|----|------|------|
+| 消费者溯源 H5 | `/t/{code}` | 扫码/打开码号，展示产品与厂家档案 |
+| 工厂后台 | `/admin` | 登录、批量导入生码、启停用（演示） |
+| 二维码演示墙 | `/demo` | 样例二维码，可下载/另扫 |
+| 小程序风格 App | `miniapp/index.html` | 单文件演示（离线样例数据） |
+
+## 技术栈
+
+- **后端**：Python FastAPI + SQLite（演示；正式按规格切 MySQL）
+- **前端**：静态 H5（可迁 uni-app 双端）
+- **接口**：`GET /api/trace/{code}` 等，见 `server/app/main.py`
+
+## 本地启动
 
 ```powershell
 cd server
-# 首次安装依赖
-# python -m pip install -r requirements.txt
-
-# 启动（默认 8760）
+python -m pip install -r requirements.txt
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8760
 ```
+
+浏览器打开：
+
+- 溯源页：http://127.0.0.1:8760/t/GT-A01-8F3K2M  
+- 后台：http://127.0.0.1:8760/admin （`admin` / `yalan2026`）  
+- 样例码：http://127.0.0.1:8760/demo  
 
 生成演示二维码：
 
@@ -19,38 +41,25 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8760
 python scripts/make_qr.py
 ```
 
-## 演示入口
+首次启动会自动建表并写入 3 个款号样例。
 
-| 地址 | 说明 |
-|------|------|
-| http://127.0.0.1:8760/demo | 二维码演示墙（手机可扫） |
-| http://127.0.0.1:8760/t/GT-A01-8F3K2M | 溯源页（羊毛大衣） |
-| http://127.0.0.1:8760/t/GT-A02-5R9W1P | 溯源页（真丝裙） |
-| http://127.0.0.1:8760/t/GT-B01-7N4Q6X | 溯源页（衬衫） |
-| http://127.0.0.1:8760/admin | 工厂后台（admin / yalan2026） |
+## 目录结构
 
-## 结构
-
-```
-server/     FastAPI + SQLite（演示）/ 生产可换 MySQL
-  static/   溯源 H5、后台、演示页、二维码 PNG
-scripts/    make_qr.py
-admin/      预留（当前静态页在 server/static/admin.html）
-client/     预留 uni-app 双端正式工程
-docs/       设计与计划
+```text
+garment-trace/
+├── docs/                 # 设计、计划、UI 参考
+├── server/               # FastAPI + 静态页
+│   ├── app/
+│   └── static/
+├── miniapp/              # 单文件小程序风格演示
+├── scripts/
+└── README.md
 ```
 
-## 演示数据
+## 手机扫码（简述）
 
-- 工厂：宁波雅澜服饰有限公司（品牌：雅澜 YALAN）
-- 3 个款号 / 批次 / 溯源码
-- 后台可 JSON 批量导入并自动生码
+`127.0.0.1` 仅本机可用。同 WiFi 演示需改为局域网 IP 或 `0.0.0.0` 监听并重打二维码；对外正式扫码需域名 + HTTPS（及备案）。
 
-## 与正式版差异
+## License
 
-| Demo | 正式版（按规格） |
-|------|------------------|
-| SQLite | MySQL |
-| 静态 H5 | uni-app 输出 H5 + 微信小程序 |
-| JSON 导入 | Excel 模板导入 |
-| 本机 127.0.0.1 | 备案域名 + HTTPS |
+演示用途；投产前请按客户与合规要求调整。
